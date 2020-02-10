@@ -1,21 +1,60 @@
 package net.jhayden.agenda.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import prosofprose.tm.agenda.util.Strings;
+
 public class AgendaInfo {
+    // --- Constants and Variables
 
-	public AgendaInfo(String theme, String date) {
-		// TODO Auto-generated constructor stub
-	}
+    private List<AgendaItem> items = new ArrayList<>();
+    private final List<ProjectSummaryDetails> projectDetails = new ArrayList<>();
 
-	public List<AgendaItem> getItems() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    private final String meetingTheme;
+    private final String meetingDate;
 
-	public void setItems(List<AgendaItem> items) {
-		// TODO Auto-generated method stub
-		
-	}
+    private final Officer vpOfMembership = new Officer();
+    
+    // --- Constructor and Initialization Methods
 
+    public AgendaInfo(final String theme, final String date) {
+        super();
+        meetingTheme = Strings.trim(theme);
+        meetingDate = Strings.trim(date);
+    }
+
+    // --- Core and Helper Methods
+    // --- Getter and Setter Methods
+    
+    public Officer getVpOfMembership() {
+    	return vpOfMembership;
+    }
+    
+    // --- Delegate and Convenience Methods
+    // --- Miscellaneous Methods
+
+    public AgendaInfo() {
+        this("TBD", "?");
+    }
+
+    public List<ProjectSummaryDetails> getProjectDetails() {
+        return projectDetails;
+    }
+
+    public String getMeetingTheme() {
+        return meetingTheme;
+    }
+
+    public String getMeetingDate() {
+        return meetingDate;
+    }
+
+    public void setItems(final List<AgendaItem> newList) {
+        items = newList;
+    }
+
+    public List<AgendaItem> getItems() {
+        return items;
+    }
 }

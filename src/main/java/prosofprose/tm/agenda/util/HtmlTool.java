@@ -1,25 +1,34 @@
 package prosofprose.tm.agenda.util;
 
-//import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
-//import org.apache.http.HttpEntity;
-//import org.apache.http.client.methods.CloseableHttpResponse;
-//import org.apache.http.client.methods.HttpGet;
-//import org.apache.http.impl.client.CloseableHttpClient;
-//import org.apache.http.impl.client.HttpClients;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public class HtmlTool {
-    static void close(final InputStream stream) {
-        try {
-            if (stream != null) {
-                stream.close();
-            }
-        }
-        catch (final IOException e) {
-        }
-    }
+	private static TrustManager[] trustAllCerts = new TrustManager[]{
+		    new X509TrustManager() {
+		        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+		            return null;
+		        }
+		        public void checkClientTrusted(
+		            java.security.cert.X509Certificate[] certs, String authType) {
+		        }
+		        public void checkServerTrusted(
+		            java.security.cert.X509Certificate[] certs, String authType) {
+		        }
+		    }
+		};
 
     // --- Constants and Variables
     // --- Constructor and Initialization Methods
@@ -31,57 +40,32 @@ public class HtmlTool {
     // --- Core and Helper Methods
     // --- Getter and Setter Methods
 
-    public static String getHtml(final String httpUrl) throws IOException {
-    	return null;
+    public static String getHtml(final String url) throws IOException {
+		final HttpClient client;
+		try {
+			System.out.println(url);
+			if (url.startsWith("https:")) {
+				SSLContext sslContext = SSLContext.getInstance("TLS");
+				sslContext.init(null, trustAllCerts, new SecureRandom());
+				client = HttpClient.newBuilder().sslContext(sslContext).build();
+			}
+			else {
+				client = HttpClient.newBuilder().build();
+			}
+			
+			HttpRequest request = HttpRequest.newBuilder(new URI(url)).header("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36").GET().build(); // headers("Content-Type", "application/json", "Accept", "application/json").GET().build();
+			
+			HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+			
+			String out = response.body();
+			return out;
+		} 
+		catch (NoSuchAlgorithmException | KeyManagementException | URISyntaxException | InterruptedException e) {
+			throw new IOException(e);
+		}
+		
     }
-    /*
-    public static String getHtml(final String httpUrl) throws IOException {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-
-        final HttpGet httpget = new HttpGet(httpUrl);
-        httpget.setHeader("User-Agent",
-                "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36");
-        CloseableHttpResponse response = null;
-        InputStream instream = null;
-
-        try {
-            response = httpclient.execute(httpget);
-
-            final HttpEntity entity = response.getEntity();
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-            final byte[] oneByte = new byte[1];
-
-            if (entity != null) {
-                instream = entity.getContent();
-
-                int available = instream.available();
-                while (available > 0) {
-                    if (available == 1) {
-                        final int read = instream.read(oneByte);
-                        if (read > 0) {
-                            baos.write(oneByte, 0, read);
-                        }
-                    }
-                    else {
-                        final byte[] bytes = new byte[available];
-                        final int read = instream.read(bytes);
-                        baos.write(bytes, 0, read);
-                    }
-
-                    available = instream.available();
-                }
-
-            }
-
-            return new String(baos.toByteArray());
-        }
-        finally {
-            close(instream);
-            response.close();
-        }
-    }
-*/
+    
     // --- Delegate and Convenience Methods
     // --- Miscellaneous Methods
 }
